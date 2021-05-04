@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from numba.np.arrayobj import dtype_type
+import time
 
 from helpers.ReceiptAnalyser import ReceiptAnalyser
 import os
@@ -35,27 +35,36 @@ def create_products():
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
 def analyse_receipts():
-    receipt = pd.DataFrame(columns=['rindex', 'nif', 'produtos_all', 'produtos', 'grupos', 'total'])
     ra = ReceiptAnalyser()
-    directory = os.fsencode("../receipts/0/")
-    i = 0
-    for file in os.listdir(directory):
-        filename = os.fsdecode(file)
-        if filename.endswith(".txt"):
-            filepath = os.path.join("../receipts/0/", filename)
-            f = open(filepath, "r", encoding="utf-8")
-            s = f.read()
-            information = ra.analyze_receipt(s)
-            information['rindex'] = i
-            receipt = receipt.append(information, ignore_index=True)
-            i += 1
-            continue
-        else:
-            continue
-    receipt.set_index('rindex')
-    receipt.to_csv('data/receipt_0.csv', encoding="utf-8")
+    for d in range(0, 86):
+        receipt = pd.DataFrame(columns=['rindex', 'nif', 'produtos_all', 'produtos', 'grupos', 'total'])
+
+        dir_str = "../receipts/{}/".format(d)
+        print("receipts_{}".format(d) + " started:")
+
+        directory = os.fsencode(dir_str)
+        i = 0
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            if filename.endswith(".txt"):
+                filepath = os.path.join(dir_str, filename)
+                f = open(filepath, "r", encoding="utf-8")
+                s = f.read()
+                information = ra.analyze_receipt(s)
+                information['rindex'] = i
+                receipt = receipt.append(information, ignore_index=True)
+                i += 1
+                continue
+            else:
+                continue
+        receipt.set_index('rindex')
+        receipt.to_csv('data/receipt_{}.csv'.format(d), encoding="utf-8")
+
+        print("receipts_{}".format(d) + " ended")
 
 
 if __name__ == '__main__':
+    start = time.time()
     # create_products()
     analyse_receipts()
+    print(time.time() - start)
