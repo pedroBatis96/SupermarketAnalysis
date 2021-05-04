@@ -19,12 +19,15 @@ class ReceiptAnalyser:
         i = 1
 
         information = {
-            "total": 0,
             "nif": 0,
+            "produtos_all": [],
             "produtos": [],
-            "grupos": []
+            "grupos": [],
+            "total": 0
         }
         is_prod_zone = True
+
+        # percorre linha a linha
         for line in iter(r.splitlines()):
             # nao interessam
             if i < 2:
@@ -49,6 +52,7 @@ class ReceiptAnalyser:
                     product_id = self.prod_dict[product]
                     product_group_id = self.proud_group_dict[product]
 
+                    information['produtos_all'].append(product_id)
                     if product_id not in information['produtos']:
                         information['produtos'].append(product_id)
                     if product_group_id not in information['grupos']:
@@ -61,7 +65,6 @@ class ReceiptAnalyser:
             # verificar o total do recibo
             if i > 5 and not is_prod_zone:
                 line = line.split(':')
-                information['total'] = line[1].strip().split(' ')[0]
+                information['total'] = float(line[1].strip().split(' ')[0])
             i += 1
-        print(information['produtos'])
-        print(information['grupos'])
+        return information
