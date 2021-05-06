@@ -1,3 +1,5 @@
+import threading
+
 import numpy as np
 import pandas as pd
 import time
@@ -34,13 +36,14 @@ def create_products():
 
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
-def analyse_receipts():
+def analyse_receipts(start_r, end_r):
+    print(start_r)
     ra = ReceiptAnalyser()
-    for d in range(0, 86):
+    for d in range(start_r, end_r):
         receipt = pd.DataFrame(columns=['rindex', 'nif', 'produtos_all', 'produtos', 'grupos', 'total'])
 
         dir_str = "../receipts/{}/".format(d)
-        print("receipts_{}".format(d) + " started:")
+        print("\nreceipts_{}".format(d) + " started:")
 
         directory = os.fsencode(dir_str)
         i = 0
@@ -60,11 +63,49 @@ def analyse_receipts():
         receipt.set_index('rindex')
         receipt.to_csv('data/receipt_{}.csv'.format(d), encoding="utf-8")
 
-        print("receipts_{}".format(d) + " ended")
+        print("\nreceipts_{}".format(d) + " ended")
+
+
+class ThreadReceipt(threading.Thread):
+    def __init__(self, threadID, start, end):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.start = start
+        self.end = end
+
+    def run(self):
+        print("Starting thread {}".format(self.threadID))
+        analyse_receipts(self.start, self.end)
+        print("Ending thread {}".format(self.threadID))
 
 
 if __name__ == '__main__':
     start = time.time()
     # create_products()
-    analyse_receipts()
+    threads = []
+    try:
+        thread1 = threading.Thread(target=analyse_receipts, args=(0, 20))
+        thread2 = threading.Thread(target=analyse_receipts, args=(20, 40))
+        thread3 = threading.Thread(target=analyse_receipts, args=(30, 60))
+        thread4 = threading.Thread(target=analyse_receipts, args=(60, 80))
+        thread5 = threading.Thread(target=analyse_receipts, args=(80, 86))
+
+        thread1.start()
+        thread2.start()
+        thread3.start()
+        thread4.start()
+        thread5.start()
+
+        threads.append(thread1)
+        threads.append(thread2)
+        threads.append(thread3)
+        threads.append(thread4)
+        threads.append(thread5)
+        for t in threads:
+            t.join()
+
+        print("Exiting Main Thread")
+    except Exception as e:
+        print(e)
+    # analyse_receipts()
     print(time.time() - start)
