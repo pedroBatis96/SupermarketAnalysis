@@ -1,10 +1,11 @@
-import threading
+from multiprocessing import Process, Manager
 
 import numpy as np
 import pandas as pd
 import time
 
-from helpers.ReceiptAnalyser import ReceiptAnalyser
+from pathlib import Path
+from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 import os
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -36,76 +37,44 @@ def create_products():
 
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
-def analyse_receipts(start_r, end_r):
-    print(start_r)
-    ra = ReceiptAnalyser()
-    for d in range(start_r, end_r):
-        receipt = pd.DataFrame(columns=['rindex', 'nif', 'produtos_all', 'produtos', 'grupos', 'total'])
+def start_receipt_analysis():
+    try:
+        manager = Manager()
+        return_dict = manager.dict()
+        open('data/receipt_total.csv', 'w').close()
 
-        dir_str = "../receipts/{}/".format(d)
-        print("\nreceipts_{}".format(d) + " started:")
+        threads = [
+            Process(target=analyse_receipts, args=(0, 20, return_dict)),
+            Process(target=analyse_receipts, args=(20, 40, return_dict)),
+            Process(target=analyse_receipts, args=(40, 60, return_dict)),
+            Process(target=analyse_receipts, args=(60, 80, return_dict)),
+            Process(target=analyse_receipts, args=(80, 86, return_dict))
+        ]
 
-        directory = os.fsencode(dir_str)
-        i = 0
-        for file in os.listdir(directory):
-            filename = os.fsdecode(file)
-            if filename.endswith(".txt"):
-                filepath = os.path.join(dir_str, filename)
-                f = open(filepath, "r", encoding="utf-8")
-                s = f.read()
-                information = ra.analyze_receipt(s)
-                information['rindex'] = i
-                receipt = receipt.append(information, ignore_index=True)
-                i += 1
-                continue
-            else:
-                continue
-        receipt.set_index('rindex')
-        receipt.to_csv('data/receipt_{}.csv'.format(d), encoding="utf-8")
+        for t in threads:
+            t.start()
 
-        print("\nreceipts_{}".format(d) + " ended")
+        for t in threads:
+            t.join()
 
+        product_dataframe = pd.read_csv('data/products.csv', encoding="utf-8", usecols=['ID', 'Nome'], index_col=["ID"])
+        r_t = pd.DataFrame.from_dict(return_dict, orient='index')
+        totals = []
+        for i in range(0, 165):
+            totals.append(r_t[i].sum())
+        product_dataframe['TotalSales'] = totals
+        product_dataframe.to_csv('data/receipt_total.csv')
 
-class ThreadReceipt(threading.Thread):
-    def __init__(self, threadID, start, end):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.start = start
-        self.end = end
-
-    def run(self):
-        print("Starting thread {}".format(self.threadID))
-        analyse_receipts(self.start, self.end)
-        print("Ending thread {}".format(self.threadID))
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':
     start = time.time()
     # create_products()
-    threads = []
-    try:
-        thread1 = threading.Thread(target=analyse_receipts, args=(0, 20))
-        thread2 = threading.Thread(target=analyse_receipts, args=(20, 40))
-        thread3 = threading.Thread(target=analyse_receipts, args=(30, 60))
-        thread4 = threading.Thread(target=analyse_receipts, args=(60, 80))
-        thread5 = threading.Thread(target=analyse_receipts, args=(80, 86))
+    start_receipt_analysis()
 
-        thread1.start()
-        thread2.start()
-        thread3.start()
-        thread4.start()
-        thread5.start()
+    # analyse_receipts(0, 1)
 
-        threads.append(thread1)
-        threads.append(thread2)
-        threads.append(thread3)
-        threads.append(thread4)
-        threads.append(thread5)
-        for t in threads:
-            t.join()
-
-        print("Exiting Main Thread")
-    except Exception as e:
-        print(e)
     # analyse_receipts()
     print(time.time() - start)
