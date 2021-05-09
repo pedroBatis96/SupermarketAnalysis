@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.DataMiningHelper import fp_growth
+from helpers.StatisticsHelper import calc_p_statistics,get_tops
 import os
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -73,9 +74,11 @@ def start_receipt_analysis():
 if __name__ == '__main__':
     start = time.time()
     # create_products()
-    start_receipt_analysis()
+    # start_receipt_analysis()
 
     # analyse_receipts(0, 1,{})
 
-    fp_growth()
+    # fp_growth()
+    calc_p_statistics()
+    get_tops()
     print(time.time() - start)

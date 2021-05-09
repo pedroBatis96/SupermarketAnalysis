@@ -1,10 +1,7 @@
 import json
-
 import pandas as pd
-import numpy as np
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth
-from ast import literal_eval
 
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
