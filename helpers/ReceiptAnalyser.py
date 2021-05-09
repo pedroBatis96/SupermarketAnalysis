@@ -70,7 +70,7 @@ class ReceiptAnalyser:
                     else:
                         information['nif'] = int(line[2].strip())
                 # produtos
-                elif i > 5 and is_prod_zone:
+                elif i > 4 and is_prod_zone:
                     if line[1] == '>':
                         line = line[2:]
                         line = line.split(':')
