@@ -29,12 +29,13 @@ def calc_probability(data):
 
 # cria os produtos como csv com a coluna prob
 def create_products():
-    product_dataframe = pd.read_csv('../Produtos.csv', encoding="utf-8")
+    product_dataframe = pd.read_csv('../Produtos.txt',delimiter='\t', encoding="utf-8")
     product_dataframe.index += 1
     probability = calc_probability(product_dataframe)
 
     product_dataframe['Nome'] = product_dataframe['Nome'].str.strip()
     product_dataframe['prob'] = probability
+    product_dataframe.index.name = 'ID'
     product_dataframe.to_csv('data/products.csv', encoding="utf-8")
 
 
@@ -46,11 +47,11 @@ def start_receipt_analysis():
         open('data/receipt_total.csv', 'w').close()
 
         threads = [
-            Process(target=analyse_receipts, args=(0, 20, return_dict)),
-            Process(target=analyse_receipts, args=(20, 40, return_dict)),
-            Process(target=analyse_receipts, args=(40, 60, return_dict)),
-            Process(target=analyse_receipts, args=(60, 80, return_dict)),
-            Process(target=analyse_receipts, args=(80, 86, return_dict))
+            Process(target=analyse_receipts, args=(0, 10, return_dict)),
+            Process(target=analyse_receipts, args=(10, 20, return_dict)),
+            Process(target=analyse_receipts, args=(20, 30, return_dict)),
+            Process(target=analyse_receipts, args=(30, 40, return_dict)),
+            Process(target=analyse_receipts, args=(40, 50, return_dict))
         ]
 
         for t in threads:
@@ -78,7 +79,7 @@ if __name__ == '__main__':
 
     # analyse_receipts(0, 1,{})
 
-    # fp_growth()
-    calc_p_statistics()
+    fp_growth()
+    # calc_p_statistics()
     get_tops()
     print(time.time() - start)

@@ -10,11 +10,14 @@ def fp_growth():
 
 
     frames = []
-    for i in range(0, 86):
-        df = pd.read_csv('data/receipt_{}.csv'.format(i), usecols=['products'])
+    for i in range(0, 50):
+        df = pd.read_csv('data/receipt_{}.csv'.format(i), usecols=['nif','total','products'])
         frames.append(df)
 
+
     result = pd.concat(frames)
+
+    # result.groupby(by="nif").sum('total').max()
     dataset = result['products'].to_numpy()
 
     for d in range(0, len(dataset)):

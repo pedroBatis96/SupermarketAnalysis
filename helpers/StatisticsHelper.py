@@ -19,4 +19,8 @@ def get_tops():
     topSales = df_t.sort_values(ascending=False, by="TotalSales").head(10)
     topMoney = df_t.sort_values(ascending=False, by="TotalSalesValue").head(10)
     topProfit = df_t.sort_values(ascending=False, by="TotalSalesProfit").head(10)
+
+    print(topSales.head(10))
+    print(topMoney.head(10))
+    print(topProfit.head(10))
     teste = 1
