@@ -7,7 +7,8 @@ import time
 from pathlib import Path
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.DataMiningHelper import fp_growth
-from helpers.StatisticsHelper import calc_p_statistics,get_tops
+from helpers.StatisticsHelper import calc_p_statistics, get_tops
+from helpers.ExplanationAnalyser import analyse_explanations
 import os
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +30,7 @@ def calc_probability(data):
 
 # cria os produtos como csv com a coluna prob
 def create_products():
-    product_dataframe = pd.read_csv('../Produtos.txt',delimiter='\t', encoding="utf-8")
+    product_dataframe = pd.read_csv('../Produtos.txt', delimiter='\t', encoding="utf-8")
     product_dataframe.index += 1
     probability = calc_probability(product_dataframe)
 
@@ -72,14 +73,41 @@ def start_receipt_analysis():
         print(e)
 
 
+# para cada recibo de cada pasta, analisa e retira a informação relevante
+def start_explanation_analysis():
+    try:
+        manager = Manager()
+        return_dict = manager.dict()
+        open('data/receipt_total.csv', 'w').close()
+
+        threads = [
+            Process(target=analyse_explanations, args=(0, 10)),
+            Process(target=analyse_explanations, args=(10, 20)),
+            Process(target=analyse_explanations, args=(20, 30)),
+            Process(target=analyse_explanations, args=(30, 40)),
+            Process(target=analyse_explanations, args=(40, 50))
+        ]
+
+        for t in threads:
+            t.start()
+
+        for t in threads:
+            t.join()
+
+    except Exception as e:
+        print(e)
+
+
 if __name__ == '__main__':
     start = time.time()
     # create_products()
     # start_receipt_analysis()
+    start_explanation_analysis()
 
     # analyse_receipts(0, 1,{})
+    # analyse_explanations(0, 1)
 
-    fp_growth()
+    # fp_growth()
     # calc_p_statistics()
-    get_tops()
+    # get_tops()
     print(time.time() - start)
