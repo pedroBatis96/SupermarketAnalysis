@@ -19,15 +19,15 @@
 17,0.347708,frozenset({'BOLACHAS'})
 18,0.339552,frozenset({'ALFACE'})
 19,0.347612,frozenset({'COUVE'})
-20,0.61155,"frozenset({'AGUA', 'PÃO'})"
-21,0.582884,"frozenset({'PAPEL HIGIÉNICO', 'PÃO'})"
+20,0.61155,"frozenset({'PÃO', 'AGUA'})"
+21,0.582884,"frozenset({'PÃO', 'PAPEL HIGIÉNICO'})"
 22,0.559092,"frozenset({'AGUA', 'PAPEL HIGIÉNICO'})"
-23,0.446254,"frozenset({'AGUA', 'PAPEL HIGIÉNICO', 'PÃO'})"
-24,0.335018,"frozenset({'ICETEA', 'PÃO'})"
-25,0.323424,"frozenset({'ICETEA', 'AGUA'})"
+23,0.446254,"frozenset({'PÃO', 'AGUA', 'PAPEL HIGIÉNICO'})"
+24,0.335018,"frozenset({'PÃO', 'ICETEA'})"
+25,0.323424,"frozenset({'AGUA', 'ICETEA'})"
 26,0.30631,"frozenset({'ICETEA', 'PAPEL HIGIÉNICO'})"
 27,0.304718,"frozenset({'AGUA', 'IOGURTE LIGHT'})"
-28,0.40822,"frozenset({'PÃO DE FORMA', 'PÃO'})"
-29,0.391062,"frozenset({'PÃO DE FORMA', 'AGUA'})"
+28,0.40822,"frozenset({'PÃO', 'PÃO DE FORMA'})"
+29,0.391062,"frozenset({'AGUA', 'PÃO DE FORMA'})"
 30,0.37334,"frozenset({'PÃO DE FORMA', 'PAPEL HIGIÉNICO'})"
-31,0.312062,"frozenset({'PÃO DE FORMA', 'AGUA', 'PÃO'})"
+31,0.312062,"frozenset({'PÃO', 'AGUA', 'PÃO DE FORMA'})"

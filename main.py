@@ -4,12 +4,14 @@ import numpy as np
 import pandas as pd
 import time
 
-from pathlib import Path
+from argparse import ArgumentParser
+
+from helpers.DataMiningHelper import best_client,fp_growth
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
-from helpers.DataMiningHelper import fp_growth
-from helpers.StatisticsHelper import calc_p_statistics, get_tops
 from helpers.ExplanationAnalyser import analyse_explanations
+from helpers.StatisticsHelper import get_normal_stamina_distribuition
 import os
+
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -76,10 +78,6 @@ def start_receipt_analysis():
 # para cada recibo de cada pasta, analisa e retira a informação relevante
 def start_explanation_analysis():
     try:
-        manager = Manager()
-        return_dict = manager.dict()
-        open('data/receipt_total.csv', 'w').close()
-
         threads = [
             Process(target=analyse_explanations, args=(0, 10)),
             Process(target=analyse_explanations, args=(10, 20)),
@@ -100,14 +98,25 @@ def start_explanation_analysis():
 
 if __name__ == '__main__':
     start = time.time()
-    # create_products()
-    # start_receipt_analysis()
-    start_explanation_analysis()
 
+    # criar produto
+    # create_products()
+
+    # analise
+    # start_receipt_analysis()
+    # start_explanation_analysis()
+
+    # teste
     # analyse_receipts(0, 1,{})
     # analyse_explanations(0, 1)
 
+    # probabilidades
     # fp_growth()
     # calc_p_statistics()
     # get_tops()
+
+    # get_normal_stamina_distribuition()
+    best_client()
+
+
     print(time.time() - start)
