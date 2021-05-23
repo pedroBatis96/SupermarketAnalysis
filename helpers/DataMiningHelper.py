@@ -38,32 +38,48 @@ def best_client():
 
     frames = []
     for i in range(0, 50):
-        df = pd.read_csv('data/receipt_{}.csv'.format(i), usecols=['nif', 'total', 'products', 'products_all'])
+        df = pd.read_csv('data/receipt_{}.csv'.format(i), usecols=['nif', 'total', 'products', 'products_all'],
+                         dtype={'total': float})
         frames.append(df)
 
     result = pd.concat(frames)
 
     top_sales_nif = result.groupby(by="nif").sum('total').sort_values(ascending=False, by="total").head(100)
-    print(top_sales_nif)
 
-    result = result.groupby(by="nif")
+    result = result.groupby(by="nif").sum('total')
+    result.reindex()
 
-    #product_profit_df = pd.DataFrame(columns=['nif', 'total_profit'], dtype={'nif': 'string', 'total_profit': 'float'})
-    rows = np.empty([len(result),2],dtype=dict)
-    i = 0
-    for i , (group_name, df_group) in enumerate(result):
-        total = 0
-        products_all = df_group['products_all'].apply(json.loads).to_numpy()
+    top_profit_nif = pd.read_csv('data/totals/niftotals.csv'.format(i), usecols=['nif', 'total_profit'],
+                                 dtype={'total_profit': float})
 
-        for shelf in products_all:
-            for product in shelf:
-                product_info = product_df.loc[product].to_numpy(dtype=float)
-                total += (float(product_info[0]) * (float(product_info[1]) / 100))
-        rows[i][0] = group_name
-        rows[i][1] = total
+    all_tops = pd.merge(result, top_profit_nif, on='nif')
+    all_tops.to_csv('data/totals/niftotals.csv', encoding='utf-8')
 
-    product_profit_df = pd.DataFrame(rows, columns=['nif', 'total_profit'])
-    product_profit_df.to_csv('data/totals/niftotals.csv', encoding='utf-8')
+    top_sales_nif = all_tops[['nif', 'total']].groupby(by="nif")
+    top_profits_nif = all_tops[['nif', 'total_profit']].groupby(by="nif")
 
-    #product_profit_df.reindex()
-    #print(product_profit_df.sort_values(ascending=False, by="total").head(100))
+    top_sales_nif = top_sales_nif.sum('total').sort_values(ascending=False, by="total").head(100)
+    top_profits_nif = top_profits_nif.sum('total_profit').sort_values(ascending=False, by="total_profit").head(100)
+
+    top_sales_nif.to_csv('data/totals/top_sales_nif.csv', encoding='utf-8')
+    top_profits_nif.to_csv('data/totals/top_profits_nif.csv', encoding='utf-8')
+
+    # product_profit_df = pd.DataFrame(columns=['nif', 'total_profit'], dtype={'nif': 'string', 'total_profit': 'float'})
+    # = np.empty([len(result),2],dtype=dict)
+    # i = 0
+    # for i , (group_name, df_group) in enumerate(result):
+    #    total = 0
+    #    products_all = df_group['products_all'].apply(json.loads).to_numpy()
+
+    #    for shelf in products_all:
+    #        for product in shelf:
+    #            product_info = product_df.loc[product].to_numpy(dtype=float)
+    #            total += (float(product_info[0]) * (float(product_info[1]) / 100))
+    #    rows[i][0] = group_name
+    #    rows[i][1] = total
+
+    # product_profit_df = pd.DataFrame(rows, columns=['nif', 'total_profit'])
+    # product_profit_df.to_csv('data/totals/niftotals.csv', encoding='utf-8')
+
+    # product_profit_df.reindex()
+    # print(product_profit_df.sort_values(ascending=False, by="total").head(100))
