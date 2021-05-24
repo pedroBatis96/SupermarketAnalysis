@@ -1,4 +1,5 @@
 import numpy as np
+import networkx as nx
 
 '''
 2 = entrada
@@ -12,7 +13,7 @@ class GraphHelper:
     walk_tiles = []
     supermarket_type = []
     supermarket_number = []
-    connectios = {}
+    connections = {}
 
     def __init__(self):
         self.walk_tiles = [
@@ -67,7 +68,7 @@ class GraphHelper:
                     connect_aux.append(self.supermarket_number[aux + 1, i])
                     connect_aux.append(self.supermarket_number[aux, i - 1])
                     connect_aux.append(self.supermarket_number[aux, i + 1])
-                self.connectios[self.supermarket_number[aux, i]] = connect_aux
+                self.connections[self.supermarket_number[aux, i]] = connect_aux
 
     def create_supermarket(self):
         self.supermarket_number = np.zeros([23, 21], dtype=int)
@@ -77,6 +78,8 @@ class GraphHelper:
 
         # supermarket = [self.mark_territory(i) for i in range(483)]
         # supermarket = np.asarray(supermarket, dtype=int).reshape([21, 23])
+        G = nx.DiGraph(self.connections)
+        print(G.edges)
 
         return self.supermarket_type
 

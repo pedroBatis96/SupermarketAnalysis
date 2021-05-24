@@ -99,13 +99,13 @@ def start_explanation_analysis():
 
 def create_graph():
     g_obj = GraphHelper()
-    print(g_obj.create_supermarket())
+    g_obj.create_supermarket()
 
 
 if __name__ == '__main__':
     start = time.time()
-    count_all()
-    #create_graph()
+    #count_all()
+    create_graph()
 
     # criar produto
     # create_products()

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth
+from sklearn import preprocessing
 
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
@@ -116,9 +117,13 @@ def count_all(calc=False):
     else:
         new_df = pd.read_csv('data/totals/ProbPickUp.csv', encoding='utf-8',
                              usecols=["ID", "Nome", "Preço", "Margem Lucro", "ProbPickUp"],
-                             index_col="ID")
+                             index_col="ID",dtype={"ProbPickUp":int})
 
-    print(new_df.sort_values(by='ProbPickUp', ascending=False).head(100))
+
+    print(preprocessing.normalize(new_df['ProbPickUp'].to_numpy().reshape(1, -1)))
+
+
+    #print(new_df.sort_values(by='ProbPickUp', ascending=False).head(100))
 
     # for res in result_receipts:
     #    for item in res:
