@@ -1,10 +1,9 @@
 import pandas as pd
-import numpy as np
 from pathlib import Path
 import re
 
 
-# para cada recibo de cada pasta, analisa e retira a informação relevante
+# para cada explicação de cada pasta, analisa e retira a informação relevante
 def analyse_explanations(start_r, end_r):
     ra = ExplanationAnalyser()
     for d in range(start_r, end_r):
@@ -70,6 +69,8 @@ class ExplanationAnalyser:
                         continue
                     else:
                         break
+            # verifica a stamina do cliente
+            #caso tenha ficado cansado é na penultima, caso nao é na ultima
             if "Walked" in lines[-2]:
                 stamina_values = re.findall(r"[-+]?\d*\.\d+|\d+", lines[-2])
             elif "Walked" in lines[-1]:

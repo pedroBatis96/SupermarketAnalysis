@@ -6,7 +6,7 @@ import time
 
 from argparse import ArgumentParser
 
-from helpers.DataMiningHelper import best_client, fp_growth,count_all
+from helpers.DataMiningHelper import calc_tops_by_nif, fp_growth,calc_random_pick_up_prob
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.ExplanationAnalyser import analyse_explanations
 from helpers.StatisticsHelper import get_normal_stamina_distribuition
@@ -104,13 +104,14 @@ def create_graph():
 
 if __name__ == '__main__':
     start = time.time()
-    #count_all()
-    create_graph()
+
+    calc_random_pick_up_prob()
+    # create_graph()
 
     # criar produto
     # create_products()
 
-    # analise
+    # analise de recibos e explicações
     # start_receipt_analysis()
     # start_explanation_analysis()
 
@@ -124,6 +125,6 @@ if __name__ == '__main__':
     # get_tops()
 
     # get_normal_stamina_distribuition()
-    # best_client()
+    # calc_tops_by_nif()
 
     print(time.time() - start)

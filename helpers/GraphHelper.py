@@ -40,6 +40,7 @@ class GraphHelper:
             439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459
         ]
 
+    # marca a matriz como a legenda no inicio, e atribui um número
     def mark_territory(self) -> int:
         n = 0
         for i in range(0, 21):
@@ -59,6 +60,7 @@ class GraphHelper:
                 self.supermarket_number[aux, i] = n
                 self.supermarket_type[aux, i] = shelf_type
 
+    # cria um dicionário com as conexões para cada um
     def create_connections(self):
         for i in range(0, 21):
             for aux in range(0, 23):
@@ -76,10 +78,8 @@ class GraphHelper:
         self.mark_territory()
         self.create_connections()
 
-        # supermarket = [self.mark_territory(i) for i in range(483)]
-        # supermarket = np.asarray(supermarket, dtype=int).reshape([21, 23])
-        G = nx.DiGraph(self.connections)
-        print(G.edges)
+        graph = nx.DiGraph(self.connections)
+        print(graph.edges)
 
         return self.supermarket_type
 

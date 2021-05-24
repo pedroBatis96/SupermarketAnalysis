@@ -15,7 +15,7 @@ def calc_p_statistics():
 
     df_t.to_csv('data/receipt_total.csv', encoding='utf-8')
 
-
+# faz print dos tops de cada produto, vendas, dinheiro, lucro
 def get_tops():
     df_t = pd.read_csv('data/receipt_total.csv', encoding='utf-8', index_col="ID")
     topSales = df_t.sort_values(ascending=False, by="TotalSales").head(10)
@@ -26,13 +26,13 @@ def get_tops():
     print(topMoney.head(10))
     print(topProfit.head(10))
 
-
+# cria uma distribuição normal usando a stamina das explicações
 def get_normal_stamina_distribuition():
-    frames = []
 
+    # concatena todas as explicações
+    frames = []
     for i in range(0, 50):
-        df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],
-                         dtype={"stamina": float})
+        df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],dtype={"stamina": float})
         frames.append(df)
 
     fig, ax = plt.subplots(1, 1)
@@ -40,20 +40,21 @@ def get_normal_stamina_distribuition():
     result = pd.concat(frames)
     x = result['stamina'].to_numpy()
 
-    # Stamina histogram
+    # Histograma
     sns.distplot(x, hist=True, kde=False, color='blue', hist_kws={'edgecolor': 'black'})
     plt.savefig("staminaHistogram.jpg")
     plt.clf()
 
-    # seaborn histogram
+    # Histograma do seaborn
     sns.distplot(x, hist=True, kde=True, color='blue', hist_kws={'edgecolor': 'black'},kde_kws={'linewidth': 2})
     plt.savefig("staminaHistogramDensity.jpg")
     plt.clf()
 
-    # Isolate the density
+    # Isolar a densidade
     sns.kdeplot(data=x)
     plt.savefig("staminaDensity.jpg")
 
+    # usar para criar clientes
     x = x.reshape(-1, 1)
     kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(x)
 

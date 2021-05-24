@@ -90,6 +90,7 @@ class ReceiptAnalyser:
                     else:
                         is_prod_zone = False
                         continue
+                # o total encontra-se na ultima linha
                 else:
                     line = line.split(':')
                     information['total'] = float(line[1].strip().split(' ')[0])
