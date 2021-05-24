@@ -15,6 +15,7 @@ def calc_p_statistics():
 
     df_t.to_csv('data/receipt_total.csv', encoding='utf-8')
 
+
 # faz print dos tops de cada produto, vendas, dinheiro, lucro
 def get_tops():
     df_t = pd.read_csv('data/receipt_total.csv', encoding='utf-8', index_col="ID")
@@ -26,13 +27,14 @@ def get_tops():
     print(topMoney.head(10))
     print(topProfit.head(10))
 
-# cria uma distribuição normal usando a stamina das explicações
-def get_normal_stamina_distribuition():
 
+# cria uma distribuição normal usando a stamina das explicações
+def draw_stamina_distribuition():
     # concatena todas as explicações
     frames = []
     for i in range(0, 50):
-        df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],dtype={"stamina": float})
+        df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],
+                         dtype={"stamina": float})
         frames.append(df)
 
     fig, ax = plt.subplots(1, 1)
@@ -46,7 +48,7 @@ def get_normal_stamina_distribuition():
     plt.clf()
 
     # Histograma do seaborn
-    sns.distplot(x, hist=True, kde=True, color='blue', hist_kws={'edgecolor': 'black'},kde_kws={'linewidth': 2})
+    sns.distplot(x, hist=True, kde=True, color='blue', hist_kws={'edgecolor': 'black'}, kde_kws={'linewidth': 2})
     plt.savefig("staminaHistogramDensity.jpg")
     plt.clf()
 
@@ -59,3 +61,20 @@ def get_normal_stamina_distribuition():
     kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(x)
 
     plt.show()
+
+
+def get_normal_stamina_distribuition():
+    # concatena todas as explicações
+    frames = []
+    for i in range(0, 50):
+        df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],
+                         dtype={"stamina": float})
+        frames.append(df)
+
+    result = pd.concat(frames)
+    x = result['stamina'].to_numpy()
+
+    # usar para criar clientes
+    x = x.reshape(-1, 1)
+    kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(x)
+    return kde

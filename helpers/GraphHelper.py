@@ -70,6 +70,11 @@ class GraphHelper:
                     connect_aux.append(self.supermarket_number[aux + 1, i])
                     connect_aux.append(self.supermarket_number[aux, i - 1])
                     connect_aux.append(self.supermarket_number[aux, i + 1])
+                if self.supermarket_number[aux, i] in [414,115] :
+                    connect_aux.append(self.supermarket_number[aux - 1, i])
+                    connect_aux.append(self.supermarket_number[aux, i - 1])
+                    connect_aux.append(self.supermarket_number[aux, i + 1])
+
                 self.connections[self.supermarket_number[aux, i]] = connect_aux
 
     def create_supermarket(self):
@@ -79,9 +84,8 @@ class GraphHelper:
         self.create_connections()
 
         graph = nx.DiGraph(self.connections)
-        print(graph.edges)
 
-        return self.supermarket_type
+        return graph
 
 
 #

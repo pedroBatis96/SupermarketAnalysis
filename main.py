@@ -10,6 +10,7 @@ from helpers.DataMiningHelper import calc_tops_by_nif, fp_growth,calc_random_pic
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.ExplanationAnalyser import analyse_explanations
 from helpers.StatisticsHelper import get_normal_stamina_distribuition
+from helpers.TheSimulator import TheSimulator
 
 from helpers.GraphHelper import GraphHelper
 import os
@@ -99,14 +100,16 @@ def start_explanation_analysis():
 
 def create_graph():
     g_obj = GraphHelper()
-    g_obj.create_supermarket()
+    graph = g_obj.create_supermarket()
+    simulator = TheSimulator(graph)
+
 
 
 if __name__ == '__main__':
     start = time.time()
 
-    calc_random_pick_up_prob()
-    # create_graph()
+    # calc_random_pick_up_prob()
+    create_graph()
 
     # criar produto
     # create_products()
