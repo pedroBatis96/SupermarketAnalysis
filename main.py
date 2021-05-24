@@ -6,12 +6,13 @@ import time
 
 from argparse import ArgumentParser
 
-from helpers.DataMiningHelper import best_client,fp_growth
+from helpers.DataMiningHelper import best_client, fp_growth,count_all
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.ExplanationAnalyser import analyse_explanations
 from helpers.StatisticsHelper import get_normal_stamina_distribuition
-import os
 
+from helpers.GraphHelper import GraphHelper
+import os
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -96,8 +97,15 @@ def start_explanation_analysis():
         print(e)
 
 
+def create_graph():
+    g_obj = GraphHelper()
+    print(g_obj.create_supermarket())
+
+
 if __name__ == '__main__':
     start = time.time()
+    count_all()
+    #create_graph()
 
     # criar produto
     # create_products()
@@ -116,7 +124,6 @@ if __name__ == '__main__':
     # get_tops()
 
     # get_normal_stamina_distribuition()
-    best_client()
-
+    # best_client()
 
     print(time.time() - start)

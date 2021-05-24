@@ -42,10 +42,8 @@ def best_client():
                          dtype={'total': float})
         frames.append(df)
 
+    # concatenar os resultados
     result = pd.concat(frames)
-
-    top_sales_nif = result.groupby(by="nif").sum('total').sort_values(ascending=False, by="total").head(100)
-
     result = result.groupby(by="nif").sum('total')
     result.reindex()
 
@@ -83,3 +81,45 @@ def best_client():
 
     # product_profit_df.reindex()
     # print(product_profit_df.sort_values(ascending=False, by="total").head(100))
+
+
+def count_all(calc=False):
+    if calc:
+        prod_df = pd.read_csv('data/products.csv', encoding='utf-8', usecols=["ID", "Nome", "Preço", "Margem Lucro"],
+                              index_col="ID")
+
+        frames = []
+        for i in range(0, 50):
+            df = pd.read_csv('data/receipt_{}.csv'.format(i), usecols=['products_all'],
+                             dtype={'total': float})
+            frames.append(df)
+
+        result_receipts = pd.concat(frames)['products_all'].apply(json.loads).to_numpy()
+
+        frames = []
+        for i in range(0, 50):
+            df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['products'],
+                             dtype={'total': float})
+            frames.append(df)
+
+        result_explanations = pd.concat(frames)['products'].apply(json.loads).to_numpy()
+
+        n_new_products = np.zeros(len(prod_df.index), dtype=int)
+        for i, item in enumerate(result_receipts):
+            item_aux = np.setdiff1d(item, result_explanations[i])
+            for j in item_aux:
+                n_new_products[j - 1] += 1
+
+        new_df = prod_df.copy()
+        new_df['ProbPickUp'] = n_new_products
+        new_df.to_csv('data/totals/ProbPickUp.csv', encoding='utf-8')
+    else:
+        new_df = pd.read_csv('data/totals/ProbPickUp.csv', encoding='utf-8',
+                             usecols=["ID", "Nome", "Preço", "Margem Lucro", "ProbPickUp"],
+                             index_col="ID")
+
+    print(new_df.sort_values(by='ProbPickUp', ascending=False).head(100))
+
+    # for res in result_receipts:
+    #    for item in res:
+    #        n_products[item - 1] += 1
