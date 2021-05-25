@@ -1,4 +1,5 @@
 import random
+from multiprocessing import Process, Manager
 import time
 
 import networkx as nx
@@ -142,12 +143,47 @@ class TheSimulator:
                 continue
         teste = 1
 
+    def begin_simulation(self, multi_process=True):
+        manager = Manager()
+        return_dict = manager.dict()
+
+        if multi_process:
+            threads = []
+            if len(self.clients) % 2 == 0:
+                clients_split = np.split(self.clients, 4)
+            else:
+                clients_split = np.split(self.clients, 3)
+
+            for c, split in enumerate(clients_split):
+                thread = Process(target=self.execute_simulation,
+                                 args=(self.product_distribution, split, c, return_dict))
+                threads.append(thread)
+                thread.start()
+
+            # for t in threads:
+            #    t.start()
+
+            for t in threads:
+                t.join()
+
+            total_profit = 0
+            total_sales = 0
+            for k in return_dict.keys():
+                total_profit += return_dict[k]['profit']
+                total_sales += return_dict[k]['value']
+
+        else:
+            total_profit, total_sales = self.execute_simulation(self.product_distribution, self.clients)
+
+        return total_profit, total_sales
+        # print(return_dict)
+
     # na wishlist, reparei, que ele vai de baixo para cima
-    def begin_simulation(self):
+    def execute_simulation(self, product_distribution, clients, split_id=None, return_dict={}):
         total_profit = 0
         total_sales = 0
         # start all clients simulation
-        for client in self.clients:
+        for client in clients:
             total_client_profit = 0
             total_client_value = 0
 
@@ -163,7 +199,7 @@ class TheSimulator:
 
                 # verifica a posição mais proxima do produto desejado
                 shortest_path = None
-                for node in self.product_distribution[next_p]:
+                for node in product_distribution[next_p]:
                     path = nx.dijkstra_path(self.graph, current_position, node)
                     if not shortest_path or len(path) < len(shortest_path):
                         shortest_path = path
@@ -213,7 +249,7 @@ class TheSimulator:
             total_profit += total_client_profit
             total_sales += total_client_value
 
-        # end all clients simulation
-        print(f"{bcolors.ENDC}")
-        print(f"Total Profit: {total_profit}")
-        print(f"Total Value: {total_sales}")
+        if split_id:
+            return_dict[split_id] = {'profit': total_profit, 'value': total_sales}
+        else:
+            return total_profit, total_sales
