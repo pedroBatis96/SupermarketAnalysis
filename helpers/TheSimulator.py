@@ -48,7 +48,7 @@ class TheSimulator:
         439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459,
         414, 115, 1, 23, 461, 483
     ])
-
+    shelf_tiles = np.setdiff1d(np.arange(1, 483), walk_tiles).tolist()
     # none_tiles = np.array([])
     product_distribution = {}
     df_p = None
@@ -58,8 +58,8 @@ class TheSimulator:
         # grafico e distribuição de produtos
         self.graph = graph
 
-        self.prepare_simulation(25000)
-        self.begin_simulation()
+        # self.prepare_simulation(25000)
+        # self.begin_simulation()
 
         return
 
@@ -114,7 +114,7 @@ class TheSimulator:
     def distribute_products(self, distribution=None):
         df_p = pd.read_csv('data/products.csv', encoding='utf-8', usecols=['ID', 'Total Prateleiras'], index_col="ID")
 
-        if not distribution:
+        if distribution is None:
             distribution = []
             for index, row in df_p.iterrows():
                 for prateleira in range(0, row['Total Prateleiras']):
@@ -141,6 +141,12 @@ class TheSimulator:
         self.distribute_products(products)
         self.clients_generator(client_n)
 
+    def prepare_clients(self, client_n):
+        self.clients_generator(client_n)
+
+    def prepare_products(self, products):
+        self.distribute_products(products)
+
     def begin_simulation(self, multi_process=True):
         manager = Manager()
         return_dict = manager.dict()
@@ -166,20 +172,23 @@ class TheSimulator:
 
             total_profit = 0
             total_sales = 0
+            total_access = np.zeros(248, dtype=int)
             for k in return_dict.keys():
                 total_profit += return_dict[k]['profit']
                 total_sales += return_dict[k]['value']
+                total_access += return_dict[k]['total_access']
 
         else:
             total_profit, total_sales = self.execute_simulation(self.product_distribution, self.clients)
 
-        return total_profit, total_sales
+        return total_profit, total_sales, total_access
         # print(return_dict)
 
     # na wishlist, reparei, que ele vai de baixo para cima
     def execute_simulation(self, product_distribution, clients, split_id=None, return_dict={}):
         total_profit = 0
         total_sales = 0
+        total_access = np.zeros(248, dtype=int)
         # start all clients simulation
         for client in clients:
             total_client_profit = 0
@@ -224,6 +233,7 @@ class TheSimulator:
 
                             total_client_profit += self.df_p.at[shelf_product, 'Lucro']
                             total_client_value += self.df_p.at[shelf_product, 'Preço']
+                            total_access[self.shelf_tiles.index(shelf)] += 1
 
                         # verificar a probabilidade de comprar sem estar na wishlisht
                         else:
@@ -233,6 +243,7 @@ class TheSimulator:
 
                                 total_client_profit += self.df_p.at[shelf_product, 'Lucro']
                                 total_client_value += self.df_p.at[shelf_product, 'Preço']
+                                total_access[self.shelf_tiles.index(shelf)] += 1
 
             # end client simulation
             # if len(wish_list) == 0:
@@ -246,6 +257,6 @@ class TheSimulator:
             total_sales += total_client_value
 
         if split_id:
-            return_dict[split_id] = {'profit': total_profit, 'value': total_sales}
+            return_dict[split_id] = {'profit': total_profit, 'value': total_sales, 'total_access': total_access}
         else:
-            return total_profit, total_sales
+            return total_profit, total_sales, total_access

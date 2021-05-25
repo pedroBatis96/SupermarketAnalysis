@@ -7,6 +7,7 @@ import time
 from argparse import ArgumentParser
 
 from helpers.DataMiningHelper import calc_tops_by_nif, fp_growth,calc_random_pick_up_prob
+from helpers.GeneticAlgoritm import TheGenetic
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.ExplanationAnalyser import analyse_explanations
 from helpers.StatisticsHelper import get_normal_stamina_distribuition
@@ -103,13 +104,18 @@ def create_graph():
     graph = g_obj.create_supermarket()
     simulator = TheSimulator(graph)
 
+def start_testing():
+    genetic = TheGenetic()
+
 
 
 if __name__ == '__main__':
     start = time.time()
 
+    start_testing()
+
     # calc_random_pick_up_prob()
-    create_graph()
+    # create_graph()
 
     # criar produto
     # create_products()
