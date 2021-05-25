@@ -1,23 +1,36 @@
 import random
+import time
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 import json
 
+from helpers.DataMiningHelper import calc_random_pick_up_prob
 from helpers.StatisticsHelper import get_normal_stamina_distribuition
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARN = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 class TheSimulator:
     graph = None
     clients = None
-    walk_tiles = [
+    walk_tiles = np.array([
         25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
         48, 64, 65, 66, 68,
         71, 87, 88, 89, 91,
         94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
-        116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136,
-        137,
+        117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137,
         140, 156, 157, 160,
         163, 179, 180, 183,
         163, 179, 180, 183,
@@ -32,29 +45,41 @@ class TheSimulator:
         370, 371, 372, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 390,
         393, 409, 410, 413,
         416, 432, 433, 436,
-        439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459
-    ]
+        439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459,
 
-    none_tiles = [414, 115, 1, 23, 461, 483]
+        414, 115, 1, 23, 461, 483
+    ])
+
+    # none_tiles = np.array([])
     product_distribution = {}
-
+    df_p = None
 
     # print(nx.dijkstra_path(self.graph, 414, 3))
 
     def __init__(self, graph):
-        self.df_p = pd.read_csv('data/products.csv', usecols=['ID', 'Preço', 'Margem Lucro'], encoding='utf-8', index_col="ID")
-        self.df_p['Lucro'] = self.df_p['Preço'] * (self.df_p['Margem Lucro'] / 100)
-
+        self.initialize_products_df()
         # grafico e distribuição de produtos
         self.graph = graph
         self.distribute_products()
 
         # gerar clientes
-        self.clients_generator(1000)
+        self.clients_generator(10000)
+
         self.begin_simulation()
 
         return
 
+    def initialize_products_df(self):
+        # cria um dataframe para os produtos
+        self.df_p = pd.read_csv('data/products.csv', usecols=['ID', 'Nome', 'Preço', 'Margem Lucro'], encoding='utf-8',
+                                index_col="ID")
+        self.df_p['Lucro'] = self.df_p['Preço'] * (self.df_p['Margem Lucro'] / 100)
+
+        # faz merge com a probabilidade de ser apanhado ao acaso
+        df_p_pickup = calc_random_pick_up_prob()
+        self.df_p = pd.merge(self.df_p, df_p_pickup, on='ID')
+
+    # region client generator
     # gera os clientes, começando por fazer a wishlist e a stamina
     def clients_generator(self, n):
         wishlist = self.get_wishlist_list(n)
@@ -87,14 +112,18 @@ class TheSimulator:
         stamina_samples = stamina_dist.sample(n)
         return stamina_samples
 
+    # endregion  client generator
+
     # distribui produtos pelo grafo
     def distribute_products(self):
         df_p = pd.read_csv('data/products.csv', encoding='utf-8', usecols=['ID', 'Total Prateleiras'], index_col="ID")
 
         p = 1
         nodes = self.graph.nodes
+        i = 0
         for n in nodes:
-            if n not in self.walk_tiles and n not in self.none_tiles:
+            if n not in self.walk_tiles:
+                i += 1
                 if df_p.at[p, 'Total Prateleiras'] > 0:
                     df_p.at[p, 'Total Prateleiras'] -= 1
 
@@ -111,18 +140,24 @@ class TheSimulator:
                     self.graph.nodes[n]['p'] = p
             else:
                 continue
+        teste = 1
 
     # na wishlist, reparei, que ele vai de baixo para cima
     def begin_simulation(self):
+        total_profit = 0
+        total_sales = 0
+        # start all clients simulation
         for client in self.clients:
             total_client_profit = 0
             total_client_value = 0
 
             stamina = client[1]
             wish_list = client[0]
-            bought_products = []
+            # bought_products = []
 
             current_position = 414
+
+            # start client simulation
             while len(wish_list) > 0 and stamina > 0:
                 next_p = wish_list[-1]
 
@@ -140,21 +175,45 @@ class TheSimulator:
 
                     stamina -= 1
 
-                    print("walked to {}".format(tile))
+                    # print(f"{bcolors.ENDC}walked to {tile}")
                     current_position = tile
 
                     # test boundaries
                     for shelf in self.graph.neighbors(current_position):
-                        if shelf in self.walk_tiles or shelf in self.none_tiles:
+                        if shelf in self.walk_tiles:
                             continue
 
                         shelf_product = self.graph.nodes[shelf]['p']
+                        # caso ainda esteja na wishlist, ir buscar o produto
                         if shelf_product in wish_list:
-                            print("product in wish_list , bought {}".format(shelf_product))
-                            bought_products.append(shelf_product)
+                            # print(f"{bcolors.OKGREEN}Bought {self.df_p.at[shelf_product, 'Nome']}, product in WISHLIST")
+                            # bought_products.append(shelf_product)
                             wish_list.remove(shelf_product)
 
                             total_client_profit += self.df_p.at[shelf_product, 'Lucro']
                             total_client_value += self.df_p.at[shelf_product, 'Preço']
 
-                print(total_client_profit,total_client_value)
+                        # verificar a probabilidade de comprar sem estar na wishlisht
+                        else:
+                            sigma = random.uniform(0, 1)
+                            if sigma < self.df_p.at[shelf_product, 'ProbPickUp']:
+                                # print(f"{bcolors.WARN}Bought {self.df_p.at[shelf_product, 'Nome']}, product NOT IN WISHLIST")
+                                # bought_products.append(shelf_product)
+
+                                total_client_profit += self.df_p.at[shelf_product, 'Lucro']
+                                total_client_value += self.df_p.at[shelf_product, 'Preço']
+            # end client simulation
+            if len(wish_list) == 0:
+                # print(f"{bcolors.OKGREEN}Bought Everything")
+                pass
+            if stamina <= 0:
+                # print(f"{bcolors.FAIL}Ran out of stamina")
+                pass
+
+            total_profit += total_client_profit
+            total_sales += total_client_value
+
+        # end all clients simulation
+        print(f"{bcolors.ENDC}")
+        print(f"Total Profit: {total_profit}")
+        print(f"Total Value: {total_sales}")

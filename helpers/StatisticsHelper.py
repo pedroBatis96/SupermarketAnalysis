@@ -2,6 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KernelDensity
 import seaborn as sns
+import joblib
+from os import path
+
 from scipy.stats import norm
 
 
@@ -64,17 +67,21 @@ def draw_stamina_distribuition():
 
 
 def get_normal_stamina_distribuition():
-    # concatena todas as explicações
-    frames = []
-    for i in range(0, 50):
-        df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],
-                         dtype={"stamina": float})
-        frames.append(df)
+    if not path.exists("data/extras/kde_stamina.pkl"):
+        # concatena todas as explicações
+        frames = []
+        for i in range(0, 50):
+            df = pd.read_csv('data/explanations/explanation_{}.csv'.format(i), usecols=['stamina'],
+                             dtype={"stamina": float})
+            frames.append(df)
 
-    result = pd.concat(frames)
-    x = result['stamina'].to_numpy()
+        result = pd.concat(frames)
+        x = result['stamina'].to_numpy()
 
-    # usar para criar clientes
-    x = x.reshape(-1, 1)
-    kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(x)
+        # usar para criar clientes
+        x = x.reshape(-1, 1)
+        kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(x)
+        joblib.dump(kde, 'data/extras/kde_stamina.pkl')
+    else:
+        kde = joblib.load('data/extras/kde_stamina.pkl')
     return kde

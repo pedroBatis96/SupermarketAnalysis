@@ -106,11 +106,13 @@ def calc_random_pick_up_prob(calc=False):
     else:
         # le o csv com as probabilidades de serem apanhados random
         new_df = pd.read_csv('data/totals/ProbPickUp.csv', encoding='utf-8',
-                             usecols=["ID", "Nome", "Preço", "Margem Lucro", "ProbPickUp"],
+                             usecols=["ID", "ProbPickUp"],
                              index_col="ID", dtype={"ProbPickUp": int})
 
     # reshape e normalizados
     normalized_df = preprocessing.normalize(new_df['ProbPickUp'].to_numpy().reshape(1, -1))
+    new_df["ProbPickUp"] = normalized_df[0,:]
+    return new_df
 
 
 # calcula o profit dos nifs

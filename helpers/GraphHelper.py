@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from os import path
 
 '''
 2 = entrada
@@ -21,8 +22,7 @@ class GraphHelper:
             48, 64, 65, 66, 68,
             71, 87, 88, 89, 91,
             94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
-            116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136,
-            137,
+            117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137,
             140, 156, 157, 160,
             163, 179, 180, 183,
             163, 179, 180, 183,
@@ -78,13 +78,17 @@ class GraphHelper:
                 self.connections[self.supermarket_number[aux, i]] = connect_aux
 
     def create_supermarket(self):
-        self.supermarket_number = np.zeros([23, 21], dtype=int)
-        self.supermarket_type = np.zeros([23, 21], dtype=int)
-        self.mark_territory()
-        self.create_connections()
+        if not path.exists("data/extras/supermarket.gpickle"):
+            self.supermarket_number = np.zeros([23, 21], dtype=int)
+            self.supermarket_type = np.zeros([23, 21], dtype=int)
+            self.mark_territory()
+            self.create_connections()
 
-        graph = nx.DiGraph(self.connections)
+            graph = nx.DiGraph(self.connections)
 
+            nx.write_gpickle(graph, "data/extras/supermarket.gpickle")
+        else:
+            graph = nx.read_gpickle("data/extras/supermarket.gpickle")
         return graph
 
 
