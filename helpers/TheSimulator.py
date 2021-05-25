@@ -1,6 +1,5 @@
 import random
 from multiprocessing import Process, Manager
-import time
 
 import networkx as nx
 import numpy as np
@@ -47,7 +46,6 @@ class TheSimulator:
         393, 409, 410, 413,
         416, 432, 433, 436,
         439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459,
-
         414, 115, 1, 23, 461, 483
     ])
 
@@ -55,17 +53,12 @@ class TheSimulator:
     product_distribution = {}
     df_p = None
 
-    # print(nx.dijkstra_path(self.graph, 414, 3))
-
     def __init__(self, graph):
         self.initialize_products_df()
         # grafico e distribuição de produtos
         self.graph = graph
-        self.distribute_products()
 
-        # gerar clientes
-        self.clients_generator(10000)
-
+        self.prepare_simulation(25000)
         self.begin_simulation()
 
         return
@@ -105,6 +98,7 @@ class TheSimulator:
 
         result = pd.concat(frames)
         wish_list = list(result['products'].apply(json.loads).to_numpy())
+
         return random.sample(wish_list, n)
 
     # cria uma lista de samples
@@ -115,33 +109,37 @@ class TheSimulator:
 
     # endregion  client generator
 
+    # region produtos
     # distribui produtos pelo grafo
-    def distribute_products(self):
+    def distribute_products(self, distribution=None):
         df_p = pd.read_csv('data/products.csv', encoding='utf-8', usecols=['ID', 'Total Prateleiras'], index_col="ID")
 
-        p = 1
-        nodes = self.graph.nodes
+        if not distribution:
+            distribution = []
+            for index, row in df_p.iterrows():
+                for prateleira in range(0, row['Total Prateleiras']):
+                    distribution.append(index)
+            distribution = np.array(distribution, dtype=int)
+
         i = 0
+        nodes = self.graph.nodes
         for n in nodes:
             if n not in self.walk_tiles:
-                i += 1
-                if df_p.at[p, 'Total Prateleiras'] > 0:
-                    df_p.at[p, 'Total Prateleiras'] -= 1
-
-                    if p not in self.product_distribution.keys():
-                        self.product_distribution[p] = []
-
-                    self.product_distribution[p].append(n)
-                    self.graph.nodes[n]['p'] = p
-                else:
-                    p += 1
-                    df_p.at[p, 'Total Prateleiras'] -= 1
+                p = distribution[i]
+                if p not in self.product_distribution.keys():
                     self.product_distribution[p] = []
-                    self.product_distribution[p].append(n)
-                    self.graph.nodes[n]['p'] = p
+
+                self.product_distribution[p].append(n)
+                self.graph.nodes[n]['p'] = p
+                i += 1
             else:
                 continue
-        teste = 1
+
+    # endregion produtos
+
+    def prepare_simulation(self, client_n, products=None):
+        self.distribute_products(products)
+        self.clients_generator(client_n)
 
     def begin_simulation(self, multi_process=True):
         manager = Manager()
@@ -189,7 +187,6 @@ class TheSimulator:
 
             stamina = client[1]
             wish_list = client[0]
-            # bought_products = []
 
             current_position = 414
 
@@ -223,7 +220,6 @@ class TheSimulator:
                         # caso ainda esteja na wishlist, ir buscar o produto
                         if shelf_product in wish_list:
                             # print(f"{bcolors.OKGREEN}Bought {self.df_p.at[shelf_product, 'Nome']}, product in WISHLIST")
-                            # bought_products.append(shelf_product)
                             wish_list.remove(shelf_product)
 
                             total_client_profit += self.df_p.at[shelf_product, 'Lucro']
@@ -234,17 +230,17 @@ class TheSimulator:
                             sigma = random.uniform(0, 1)
                             if sigma < self.df_p.at[shelf_product, 'ProbPickUp']:
                                 # print(f"{bcolors.WARN}Bought {self.df_p.at[shelf_product, 'Nome']}, product NOT IN WISHLIST")
-                                # bought_products.append(shelf_product)
 
                                 total_client_profit += self.df_p.at[shelf_product, 'Lucro']
                                 total_client_value += self.df_p.at[shelf_product, 'Preço']
+
             # end client simulation
-            if len(wish_list) == 0:
-                # print(f"{bcolors.OKGREEN}Bought Everything")
-                pass
-            if stamina <= 0:
-                # print(f"{bcolors.FAIL}Ran out of stamina")
-                pass
+            # if len(wish_list) == 0:
+            # print(f"{bcolors.OKGREEN}Bought Everything")
+            # pass
+            # if stamina <= 0:
+            # print(f"{bcolors.FAIL}Ran out of stamina")
+            # pass
 
             total_profit += total_client_profit
             total_sales += total_client_value
