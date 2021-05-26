@@ -38,32 +38,46 @@ class TheGenetic:
 
         # cria a lista inicial de cromossomas
         self.chromosomes = []
-        for i in range(0, 6):
+        for i in range(0, 10):
             np.random.shuffle(self.reference)
             array_aux = self.reference.copy()
             self.chromosomes.append([array_aux, 0, []])
 
         self.chromosomes = np.array(self.chromosomes, dtype=tuple)
-        self.start_trein()
+        self.start_train()
 
-    def start_trein(self):
-        self.simulator.prepare_clients(200)
+    def start_train(self):
+        alpha = 0.3
+        top = 20
+        for e in range(0, 10):
+            print(f"Start Epoch {self.epoch}")
+            self.simulator.prepare_clients(15000)
 
-        for c, cro in enumerate(tqdm(self.chromosomes)):
-            self.simulator.prepare_products(cro[0])
-            sales, profits, total_access = self.simulator.begin_simulation()
-            if self.mode == 'SALES':
-                self.chromosomes[c][1] = sales
-            else:
-                self.chromosomes[c][1] = profits
-            self.chromosomes[c][2] = total_access
+            for c, cro in enumerate(tqdm(self.chromosomes)):
+                self.simulator.prepare_products(cro[0])
+                sales, profits, total_access = self.simulator.begin_simulation()
+                if self.mode == 'SALES':
+                    self.chromosomes[c][1] = sales
+                else:
+                    self.chromosomes[c][1] = profits
+                self.chromosomes[c][2] = total_access
 
-        self.mutate()
+            
+            if e != 9:
+                self.mutate(alpha, top)
+                alpha += 0.5
+                top += 20
+
+            self.epoch += 1
+
+        np.savetxt("data/totals/geneticresults", self.chromosomes, delimiter=",")
 
     def mutate(self, alpha=0.3, top=20):
-        worst_cromossomes = self.chromosomes[:, 1].argsort()[0:3]
+        worst_cromossomes = self.chromosomes[:, 1].argsort()[0:5]
         self.chromosomes = np.delete(self.chromosomes, worst_cromossomes, axis=0)
+        print(self.chromosomes[:, 1])
 
+        new_chromossomes = []
         for chrom in self.chromosomes:
             unmovable_shelves = (-chrom[2]).argsort()[:top]
             movable_shelves = [i for i in range(0, 248) if i not in unmovable_shelves]
@@ -79,3 +93,8 @@ class TheGenetic:
                         while twist_p == p or twist_p == -1:
                             twist_p = random.choice(movable_shelves)
                         new_chromossome[p], new_chromossome[twist_p] = new_chromossome[twist_p], new_chromossome[p]
+
+            new_chromossomes.append([new_chromossome, 0, []])
+
+        new_chromossomes = np.array(new_chromossomes, dtype=tuple)
+        self.chromosomes = np.concatenate((self.chromosomes, new_chromossomes), axis=0)

@@ -154,7 +154,7 @@ class TheSimulator:
         if multi_process:
             threads = []
             if len(self.clients) % 2 == 0:
-                clients_split = np.split(self.clients, 4)
+                clients_split = np.split(self.clients, 8)
             else:
                 clients_split = np.split(self.clients, 3)
 
