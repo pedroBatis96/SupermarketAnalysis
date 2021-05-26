@@ -30,6 +30,7 @@ class TheGenetic:
     mode = 'SALES'
     chromosomes = []
     epoch = 1
+    the_king = [[],0,[]]
 
     def __init__(self):
         self.reference = create_reference()
@@ -62,20 +63,38 @@ class TheGenetic:
                     self.chromosomes[c][1] = profits
                 self.chromosomes[c][2] = total_access
 
-            
             if e != 9:
                 self.mutate(alpha, top)
-                alpha += 0.5
+                alpha += 0.05
                 top += 20
 
             self.epoch += 1
 
-        np.savetxt("data/totals/geneticresults", self.chromosomes, delimiter=",")
+        save_dict = {'distribution': [], 'total': [], 'sale_by_shelf': []}
+        for c in self.chromosomes:
+            save_dict['distribution'].append(c[0])
+            save_dict['total'].append(c[1])
+            save_dict['sale_by_shelf'].append(c[2])
+
+        save_dict['distribution'].append(self.the_king[0])
+        save_dict['total'].append(self.the_king[1])
+        save_dict['sale_by_shelf'].append(self.the_king[2])
+
+        pd.DataFrame(save_dict).to_csv("data/totals/geneticresults.csv", encoding='utf-8')
 
     def mutate(self, alpha=0.3, top=20):
         worst_cromossomes = self.chromosomes[:, 1].argsort()[0:5]
         self.chromosomes = np.delete(self.chromosomes, worst_cromossomes, axis=0)
+        del worst_cromossomes
+
+        #vai buscar o melhor cromossoma e substitui pelo rei se for melhor
+        top_cromossome = self.chromosomes[(-self.chromosomes[:, 1]).argsort()[:1]][0].copy()
+        if top_cromossome[1] > self.the_king[1]:
+            self.the_king = top_cromossome.copy()
+
+        print(top_cromossome[1])
         print(self.chromosomes[:, 1])
+        del top_cromossome
 
         new_chromossomes = []
         for chrom in self.chromosomes:
@@ -98,3 +117,4 @@ class TheGenetic:
 
         new_chromossomes = np.array(new_chromossomes, dtype=tuple)
         self.chromosomes = np.concatenate((self.chromosomes, new_chromossomes), axis=0)
+        del new_chromossomes

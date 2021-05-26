@@ -55,17 +55,15 @@ class TheSimulator:
 
     def __init__(self, graph):
         self.initialize_products_df()
-        # grafico e distribuição de produtos
+
+        # grafo
         self.graph = graph
-
-        # self.prepare_simulation(25000)
-        # self.begin_simulation()
-
         return
 
     def initialize_products_df(self):
         # cria um dataframe para os produtos
-        self.df_p = pd.read_csv('data/products.csv', usecols=['ID', 'Nome', 'Preço', 'Margem Lucro'], encoding='utf-8',
+        self.df_p = pd.read_csv('data/products.csv',
+                                usecols=['ID', 'Nome', 'Preço', 'Margem Lucro', 'Total Prateleiras'], encoding='utf-8',
                                 index_col="ID")
         self.df_p['Lucro'] = self.df_p['Preço'] * (self.df_p['Margem Lucro'] / 100)
 
@@ -112,16 +110,15 @@ class TheSimulator:
     # region produtos
     # distribui produtos pelo grafo
     def distribute_products(self, distribution=None):
-        df_p = pd.read_csv('data/products.csv', encoding='utf-8', usecols=['ID', 'Total Prateleiras'], index_col="ID")
-
         if distribution is None:
             distribution = []
-            for index, row in df_p.iterrows():
+            for index, row in self.df_p.iterrows():
                 for prateleira in range(0, row['Total Prateleiras']):
                     distribution.append(index)
             distribution = np.array(distribution, dtype=int)
 
         i = 0
+        self.product_distribution = {}
         nodes = self.graph.nodes
         for n in nodes:
             if n not in self.walk_tiles:
@@ -142,6 +139,7 @@ class TheSimulator:
         self.clients_generator(client_n)
 
     def prepare_clients(self, client_n):
+        self.clients = None
         self.clients_generator(client_n)
 
     def prepare_products(self, products):
@@ -151,7 +149,10 @@ class TheSimulator:
         manager = Manager()
         return_dict = manager.dict()
 
-        if multi_process:
+        if not multi_process:
+            total_profit, total_sales = self.execute_simulation(self.product_distribution, self.clients)
+
+        else:
             threads = []
             if len(self.clients) % 2 == 0:
                 clients_split = np.split(self.clients, 8)
@@ -178,9 +179,11 @@ class TheSimulator:
                 total_sales += return_dict[k]['value']
                 total_access += return_dict[k]['total_access']
 
-        else:
-            total_profit, total_sales = self.execute_simulation(self.product_distribution, self.clients)
+            for t in threads:
+                t.close()
 
+        self.product_distribution = {}
+        manager.shutdown()
         return total_profit, total_sales, total_access
         # print(return_dict)
 
