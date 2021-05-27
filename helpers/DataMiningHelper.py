@@ -3,8 +3,9 @@ import json
 import numpy as np
 import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
-from mlxtend.frequent_patterns import fpgrowth
+# mlxtend.frequent_patterns import fpgrowth
 from sklearn import preprocessing
+from fpgrowth_py import fpgrowth
 
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
@@ -25,15 +26,23 @@ def fp_growth():
     for d in range(0, len(dataset)):
         dataset[d] = json.loads(dataset[d])
 
-    # cria one hot encoding e atribui a um csv
-    te = TransactionEncoder()
-    te_ary = te.fit(dataset).transform(dataset)
-    df = pd.DataFrame(te_ary, columns=te.columns_)
-    df = df.rename(columns=teste.to_dict()['Nome'])
+    for fp in [0.5,0.1,0.05,0.01]:
+        print(fp)
+        freqItemSet, rules = fpgrowth(dataset, minSupRatio=fp, minConf=fp)
+        new_df = pd.DataFrame(rules)
+        new_df.to_csv(f'respostas/fpgrowth_{fp}.csv', encoding='utf-8')
 
-    # usa o one hot encoding para calcular o fpgrowth
-    df_new = fpgrowth(df, min_support=0.3, use_colnames=True)
-    df_new.to_csv('data/fpgrowth.csv', encoding='utf-8')
+    # cria one hot encoding e atribui a um csv
+    #te = TransactionEncoder()
+    #te_ary = te.fit(dataset).transform(dataset)
+    #df = pd.DataFrame(te_ary, columns=te.columns_)
+    #df = df.rename(columns=teste.to_dict()['Nome'])
+
+   # for fp in [0.01,0.05,0.1,0.5]:
+        #print(fp)
+        # usa o one hot encoding para calcular o fpgrowth
+        #df_new = fpgrowth(df, min_support=fp, use_colnames=True)
+        #df_new.to_csv(f'respostas/fpgrowth_{fp}.csv', encoding='utf-8')
 
 
 # para cada recibo de cada pasta, analisa e retira a informação relevante
