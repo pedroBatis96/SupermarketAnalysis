@@ -48,7 +48,7 @@ class TheGenetic:
 
     def start_train(self):
         alpha = 0.25
-        top = 20
+        top = 150
         for e in range(0, 10):
             print(f"Start Epoch {self.epoch}")
             # prepara n clientes que serão a população usada na função de aptidao
@@ -72,7 +72,7 @@ class TheGenetic:
             if e != 9:
                 self.mutate(alpha, top)
                 alpha += 0.05
-                top += 20
+                top -= 10
 
             self.epoch += 1
 
@@ -109,33 +109,10 @@ class TheGenetic:
 
         new_chromosomes = []
         for chrom in self.chromosomes:
-            # verifica quais foram as top prateleiras vendidas e adiciona as às prateleiras nao moviveis
-            unmovable_shelves = list((-chrom[2].copy()).argsort()[:top])
-            movable_shelves = [i for i in range(0, 248) if i not in unmovable_shelves]
-            new_chromossome = list(chrom[0].copy())
+            new_chromossome = mutate_chromossome(chrom, top)
 
-            # objeto que ajuda a calcular o quao baixa é a probabilidade
-            shelf_prob = get_kernel_density(list(chrom[2].reshape(1, -1)[0]))
-
-            # começa a recriar uma recriação de um cromossoma de topo, em que muda as piores prateleiras entre elas
-            for p, product in enumerate(chrom[0]):
-                if p in unmovable_shelves:
-                    new_chromossome[p] = product
-                else:
-                    sigma = random.uniform(0, 1)
-
-                    # probabilidade de fazer uma mutação , verifica se é maior que alpha e se a prob de mudar é baixa
-                    if alpha >= sigma or alpha > shelf_prob[p]:
-                        twist_p = -1
-
-                        # Escolher um ao acaso para trocar
-                        while twist_p == p or twist_p == -1:
-                            twist_p = random.choice(movable_shelves)
-
-                        new_chromossome[p], new_chromossome[twist_p] = new_chromossome[twist_p], new_chromossome[p]
-
-                if Counter(new_chromossome) != Counter(self.reference):
-                    raise Exception("Wrong Counter")
+            if Counter(new_chromossome) != Counter(self.reference):
+                raise Exception("Wrong Counter")
 
             new_chromosomes.append([np.array(new_chromossome), 0, []])
 
@@ -144,6 +121,48 @@ class TheGenetic:
         del new_chromosomes
 
 
+def mutate_chromossome(chromossome, top):
+    # verifica quais foram as top prateleiras vendidas e adiciona as às prateleiras nao moviveis
+    movable_shelves = list((chromossome[2].copy()).argsort()[:top])
+
+    chrom_aux = []
+    for mov in movable_shelves:
+        chrom_aux.append(chromossome[0][mov])
+    random.shuffle(chrom_aux)
+
+    for i, mov in enumerate(movable_shelves):
+        chromossome[0][mov] = chrom_aux[i]
+
+    return list(chromossome[0])
+
+
 def get_kernel_density(X):
     mu, std = norm.fit(X)
     return np.vectorize(norm(mu, std).cdf)(X)
+
+
+def old_mode(chrom, top, alpha):
+    # verifica quais foram as top prateleiras vendidas e adiciona as às prateleiras nao moviveis
+    unmovable_shelves = list((-chrom[2].copy()).argsort()[:top])
+    movable_shelves = [i for i in range(0, 248) if i not in unmovable_shelves]
+    new_chromossome = list(chrom[0].copy())
+
+    # objeto que ajuda a calcular o quao baixa é a probabilidade
+    shelf_prob = get_kernel_density(list(chrom[2].reshape(1, -1)[0]))
+
+    # começa a recriar uma recriação de um cromossoma de topo, em que muda as piores prateleiras entre elas
+    for p, product in enumerate(chrom[0]):
+        if p in unmovable_shelves:
+            new_chromossome[p] = product
+        else:
+            sigma = random.uniform(0, 1)
+
+            # probabilidade de fazer uma mutação , verifica se é maior que alpha e se a prob de mudar é baixa
+            if alpha >= sigma or alpha > shelf_prob[p]:
+                twist_p = -1
+
+                # Escolher um ao acaso para trocar
+                while twist_p == p or twist_p == -1:
+                    twist_p = random.choice(movable_shelves)
+
+                new_chromossome[p], new_chromossome[twist_p] = new_chromossome[twist_p], new_chromossome[p]

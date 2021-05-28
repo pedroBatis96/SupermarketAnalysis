@@ -26,9 +26,9 @@ def fp_growth():
     for d in range(0, len(dataset)):
         dataset[d] = json.loads(dataset[d])
 
-    for fp in [0.5,0.1,0.05,0.01]:
+    for fp in [0.1,0.05,0.01]:
         print(fp)
-        freqItemSet, rules = fpgrowth(dataset, minSupRatio=fp, minConf=fp)
+        freqItemSet, rules = fpgrowth(dataset, minSupRatio=fp, minConf=0.6)
         new_df = pd.DataFrame(rules)
         new_df.to_csv(f'respostas/fpgrowth_{fp}.csv', encoding='utf-8')
 

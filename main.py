@@ -9,10 +9,11 @@ import json
 from argparse import ArgumentParser
 
 from helpers.DataMiningHelper import calc_tops_by_nif, fp_growth, calc_random_pick_up_prob
+from helpers.DrawHelper import drawMatrix
 from helpers.GeneticAlgoritm import TheGenetic
 from helpers.ReceiptAnalyser import ReceiptAnalyser, analyse_receipts
 from helpers.ExplanationAnalyser import analyse_explanations
-from helpers.StatisticsHelper import get_normal_stamina_distribuition
+from helpers.StatisticsHelper import get_normal_stamina_distribuition, get_tops,draw_stamina_distribuition
 from helpers.TheSimulator import TheSimulator
 
 from helpers.GraphHelper import GraphHelper
@@ -125,10 +126,14 @@ def test_specific(arr):
     print("test")
     print(simulator.begin_simulation())
 
+def draw():
+    drawMatrix()
+
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('task', choices={'t_s', 'train', 'fpgrowth', 'top100', 'normal'})
+    parser.add_argument('task', choices={'t_s', 'train', 'fpgrowth', 'top100', 'normal','top10','drawstamina','drawmatrix'})
     args = parser.parse_args()
     start = time.time()
 
@@ -142,29 +147,13 @@ if __name__ == '__main__':
         calc_tops_by_nif()
     elif args.task == 'normal':
         get_normal_stamina_distribuition()
+    elif args.task == 'top10':
+        get_tops()
+    elif args.task == 'drawstamina':
+        draw_stamina_distribuition()
+    elif args.task == 'drawmatrix':
+        draw()
     else:
         start_testing()
-
-    # calc_random_pick_up_prob()
-    # create_graph()
-
-    # criar produto
-    # create_products()
-
-    # analise de recibos e explicações
-    # start_receipt_analysis()
-    # start_explanation_analysis()
-
-    # teste
-    # analyse_receipts(0, 1,{})
-    # analyse_explanations(0, 1)
-
-    # probabilidades
-    #
-    # calc_p_statistics()
-    # get_tops()
-
-    #
-    #
 
     print(time.time() - start)

@@ -70,7 +70,7 @@ class GraphHelper:
                     connect_aux.append(self.supermarket_number[aux + 1, i])
                     connect_aux.append(self.supermarket_number[aux, i - 1])
                     connect_aux.append(self.supermarket_number[aux, i + 1])
-                if self.supermarket_number[aux, i] in [414,115] :
+                if self.supermarket_number[aux, i] in [414, 115]:
                     connect_aux.append(self.supermarket_number[aux - 1, i])
                     connect_aux.append(self.supermarket_number[aux, i - 1])
                     connect_aux.append(self.supermarket_number[aux, i + 1])

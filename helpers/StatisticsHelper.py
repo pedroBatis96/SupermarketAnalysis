@@ -51,7 +51,7 @@ def draw_stamina_distribuition():
     plt.clf()
 
     # Histograma do seaborn
-    sns.distplot(x, hist=True, kde=True, color='blue', hist_kws={'edgecolor': 'black'}, kde_kws={'linewidth': 2})
+    sns.distplot(x, hist=True, kde=True, color='red', hist_kws={'edgecolor': 'black'}, kde_kws={'linewidth': 2})
     plt.savefig("staminaHistogramDensity.jpg")
     plt.clf()
 
