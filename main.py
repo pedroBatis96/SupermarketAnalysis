@@ -1,3 +1,4 @@
+import csv
 from multiprocessing import Process, Manager
 
 import numpy as np
@@ -151,7 +152,11 @@ def write_best():
             37, 20, 45, 137, 144, 9, 44, 147, 70, 164, 157, 143, 116, 35, 24, 7, 36, 32,
             161, 35, 136, 19, 94, 147, 4, 161, 80, 57, 11, 5, 151, 102, 108, 122, 156, 132,
             3, 126, 152, 139, 83, 93, 80, 80, 99, 15, 46, 130, 135, 148]
-    pd.DataFrame(test).to_csv("respostas/top_value.csv", header=None, index=None)
+
+    #pd.DataFrame(test,type=int).to_csv("respostas/top_value.csv", header=None, index=None)
+    with open("respostas/top_value.csv", 'w', newline='') as myfile:
+        wr = csv.writer(myfile)
+        wr.writerow(np.array(test,dtype=int))
 
     test2 = [123, 143, 1, 3, 3, 88, 27, 2, 63, 88, 108, 1, 111, 154, 80, 94, 83, 11, 60, 7, 44, 122, 120, 38, 119, 20,
              114, 31, 124, 40, 45, 53, 141, 25, 1, 156, 106, 2, 69, 102, 39, 67, 118, 113, 73, 5, 77, 104, 3, 101, 70,
@@ -163,7 +168,12 @@ def write_best():
              24, 33, 15, 131, 147, 4, 89, 161, 127, 59, 1, 2, 147, 155, 139, 129, 124, 2, 87, 23, 78, 164, 144, 17, 156,
              4, 3, 79, 8, 85, 64, 75, 21, 159, 98, 15, 160, 86, 76, 103, 122, 134, 37, 69, 8, 30, 132, 93, 125, 145, 57,
              65, 4, 38, 44, 131, 10, 155, 29, 25, 19, 43, 84, 83, 64, 18, 67, 82, 72, 41, 61]
-    pd.DataFrame(test2).to_csv("respostas/top_profit.csv", header=None, index=None)
+
+    with open("respostas/top_profit.csv", 'w', newline='') as myfile:
+        wr = csv.writer(myfile)
+        wr.writerow(np.array(test2,dtype=int))
+
+    #pd.DataFrame(test2,type=int).to_csv("respostas/top_profit.csv", header=None, index=None)
 
 
 if __name__ == '__main__':
@@ -174,19 +184,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     start = time.time()
 
-    if args.task == 't_s':
-        test_specific(
-            [160, 53, 96, 39, 79, 17, 146, 79, 160, 41, 93, 45, 2, 80, 95, 78, 72, 106, 100, 59, 29, 50, 18, 76, 75,
-             155, 104, 98, 99, 3, 56, 63, 33, 158, 14, 23, 15, 157, 111, 8, 132, 121, 42, 1, 2, 52, 44, 2, 54, 121, 136,
-             6, 67, 115, 70, 112, 110, 35, 22, 3, 43, 14, 5, 39, 1, 121, 43, 4, 0, 64, 0, 56, 89, 32, 159, 134, 18, 0,
-             81, 74, 3, 48, 44, 46, 51, 2, 1, 1, 37, 36, 36, 47, 69, 37, 161, 97, 83, 82, 162, 0, 79, 3, 17, 94, 126,
-             154, 108, 84, 79, 17, 146, 17, 153, 147, 102, 124, 90, 63, 91, 146, 83, 62, 68, 82, 83, 87, 150, 3, 77, 84,
-             148, 66, 61, 0, 155, 109, 28, 4, 17, 73, 66, 127, 2, 64, 88, 158, 80, 49, 1, 107, 118, 131, 143, 65, 7, 34,
-             31, 34, 7, 129, 10, 123, 122, 55, 40, 68, 82, 105, 25, 130, 159, 24, 61, 60, 59, 60, 33, 163, 138, 11, 120,
-             19, 86, 92, 137, 141, 13, 27, 149, 38, 101, 85, 125, 87, 6, 6, 9, 135, 133, 103, 35, 119, 144, 152, 71, 86,
-             117, 87, 18, 24, 31, 123, 14, 7, 8, 58, 116, 142, 113, 15, 114, 16, 12, 20, 21, 154, 26, 128, 139, 156,
-             140, 164, 130, 32, 32, 79, 132, 146, 151, 151, 23, 8, 63, 4, 145, 128, 57, 30])
-    elif args.task == 'train':
+    if args.task == 'train':
         start_testing()
     elif args.task == 'fpgrowth':
         fp_growth()
@@ -201,7 +199,6 @@ if __name__ == '__main__':
     elif args.task == 'drawmatrix':
         draw()
     elif args.task == 'orderfp':
-        order_fp()
         write_best()
     else:
         start_testing()
